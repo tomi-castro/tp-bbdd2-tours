@@ -3,9 +3,13 @@ package unlp.info.bd2.model;
 import java.util.Date;
 import java.util.List;
 
-public class Purchase {
+import jakarta.persistence.*;
 
-    Long id;
+@Entity
+public class Purchase {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String code;
 
@@ -19,6 +23,7 @@ public class Purchase {
 
     private Review review;
 
+    @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemService> itemServiceList;
 
 
