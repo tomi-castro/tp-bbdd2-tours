@@ -1,3 +1,4 @@
+/*
 package unlp.info.bd2.config;
 
 import org.springframework.context.annotation.Bean;
@@ -13,3 +14,4 @@ public class DBInitializerConfig {
         return new DBInitializer();
     }
 }
+*/

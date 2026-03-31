@@ -1,5 +1,6 @@
 package unlp.info.bd2.model;
 
+import jakarta.persistence.OneToOne;
 
 public class Review {
 
@@ -8,7 +9,7 @@ public class Review {
     private int rating;
 
     private String comment;
-
+    @OneToOne(mappedBy = "review")
     private Purchase purchase;
 
 

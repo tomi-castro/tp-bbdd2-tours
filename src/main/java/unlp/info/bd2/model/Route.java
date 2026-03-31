@@ -3,6 +3,10 @@ package unlp.info.bd2.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+
 public class Route {
 
     private Long id;
@@ -17,8 +21,16 @@ public class Route {
 
     private List<Stop> stops;
 
+    @ManyToMany
+    @JoinTable(name="DriverUser_Route", 
+    joinColumns=@JoinColumn(name="route_id", referencedColumnName="id"),
+    inverseJoinColumns=@JoinColumn(name="driver_id", referencedColumnName="id"))
     private List<DriverUser> driverList;
 
+    @ManyToMany
+    @JoinTable(name="TourGuideUser_Route", 
+    joinColumns=@JoinColumn(name="route_id", referencedColumnName="id"),
+    inverseJoinColumns=@JoinColumn(name="tour_guide_id", referencedColumnName="id"))
     private List<TourGuideUser> tourGuideList;
 
     public Long getId() {

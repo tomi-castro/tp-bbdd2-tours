@@ -1,12 +1,15 @@
 package unlp.info.bd2.model;
 
+import jakarta.persistence.*:
+
 
 public class ItemService {
 
     Long id;
 
     private int quantity;
-
+    @ManyToOne
+    @JoinColumn(name = "purchase_id")
     private Purchase purchase;
 
     private Service service;

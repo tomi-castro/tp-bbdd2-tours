@@ -1,3 +1,4 @@
+/*
 package unlp.info.bd2.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,3 +182,4 @@ public class DBInitializer {
         Review review16 = this.toursService.addReviewToPurchase(1, "Muy caro para lo que se brinda.", purchase18);
     }
 }
+*/
