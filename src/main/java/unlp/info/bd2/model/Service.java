@@ -23,7 +23,7 @@ public class Service {
 
     private String description;
     
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "service")
     private List<ItemService> itemServiceList;
 
     @ManyToOne

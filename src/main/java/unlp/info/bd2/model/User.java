@@ -25,7 +25,7 @@ public class User {
     private String phoneNumber;
 
     private boolean active;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user")
     private List<Purchase> purchaseList;
 
 
