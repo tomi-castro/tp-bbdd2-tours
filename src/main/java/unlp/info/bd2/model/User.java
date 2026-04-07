@@ -3,9 +3,13 @@ package unlp.info.bd2.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+import jakarta.persistence.*;
+@Entity
+@Inheritance
+@DiscriminatorColumn(discriminatorType = DiscriminatorType.STRING, name="TIPO_USUARIO")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
@@ -21,7 +25,7 @@ public class User {
     private String phoneNumber;
 
     private boolean active;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Purchase> purchaseList;
 
 

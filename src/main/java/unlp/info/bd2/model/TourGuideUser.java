@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.ManyToMany;
-
+import jakarta.persistence.*;
+@Entity
+@DiscriminatorValue("TOUR_GUIDE")
 public class TourGuideUser extends User {
-
+    @Column(nullable=true)
     private String education;
 
     @ManyToMany(mappedBy = "tourGuideList")

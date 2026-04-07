@@ -1,14 +1,13 @@
 package unlp.info.bd2.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 
+@Entity
 public class Route {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -18,7 +17,8 @@ public class Route {
     private float totalKm;
 
     private int maxNumberUsers;
-
+    @OneToMany
+    @JoinColumn(name = "route_id")
     private List<Stop> stops;
 
     @ManyToMany
