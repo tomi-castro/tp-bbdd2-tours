@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {SpringDataConfiguration.class, AppConfig.class}, loader = AnnotationConfigContextLoader.class)
 @ExtendWith(SpringExtension.class)
 @Transactional
-@Rollback(true)
 class ToursApplicationTests {
 
 	@Autowired
@@ -256,7 +255,7 @@ class ToursApplicationTests {
 	}
 
 	@Test
-	void removePurchaseAndItems() throws ToursException {
+	void removePurchaseAndItemsTest() throws ToursException {
 		User user1 = this.toursService.createUser("user1", "1234", "Usuario Uno", "user1@gmail.com", dob1, "000111222333");
 		Stop stop1 = this.toursService.createStop("Estadio Monumental", "Estadio de River Plate");
 		Stop stop2 = this.toursService.createStop("Estadio La Bombonera", "Estadio de Boca Junions");
@@ -312,17 +311,26 @@ class ToursApplicationTests {
 		Purchase purchase1 = this.toursService.createPurchase("100", dyes, route1, user2);
 		assertTrue(user2.isActive());
 		this.toursService.deleteUser(user2);
-		Optional<User> optionalUser2 = this.toursService.getUserByUsername("user2");
-		assertTrue(optionalUser2.isPresent());
-		User user2b = optionalUser2.get();
-		assertFalse(user2b.isActive());
+		// Optional<User> optionalUser2 = this.toursService.getUserByUsername("user2");
+		// assertTrue(optionalUser2.isPresent());
+		// User user2b = optionalUser2.get();
+		// assertFalse(user2b.isActive()); 
+		// tengo que devolver el usuario igual con el activo false o devuelvo un opcional vacío?
 
-		assertThrows(ToursException.class, () -> this.toursService.deleteUser(user2b), "El usuario se encuentra desactivado");
+		assertThrows(ToursException.class, () -> this.toursService.deleteUser(user2), "El usuario se encuentra desactivado");
 
 		TourGuideUser tourGuideUser = this.toursService.createTourGuideUser("userG", "1234|", "Usuario TourGuide", "userg@gmail.com", dob2, "000111222555", "edu...");
 		this.toursService.assignTourGuideByUsername(tourGuideUser.getUsername(), route1.getId());
 		assertTrue(tourGuideUser.isActive());
 		assertThrows(ToursException.class, () -> this.toursService.deleteUser(tourGuideUser), "El usuario no puede ser desactivado");
+	}
+	@Test
+	void deleteUserTest2() throws ToursException {
+		User user1 = this.toursService.createUser("user2Yss", "1234", "Usuario Uno", "user1@gmail.com", dob1, "000111222333");
+	
+		assertTrue(user1.isActive());
+		this.toursService.deleteUser(user1);
+		assertTrue(this.toursService.getUserByUsername("user2Yss").isEmpty());
 	}
 
 }

@@ -34,6 +34,10 @@ public class DriverUser extends User {
         this.routes.add(route);
         route.addDriver(this);
     }
+    @Override
+    public boolean canBeDeleted() {
+        return super.canBeDeleted() && this.routes.isEmpty();
+    }
 
     public DriverUser() {
         super();

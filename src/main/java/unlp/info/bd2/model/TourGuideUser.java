@@ -43,6 +43,10 @@ public class TourGuideUser extends User {
         super(username, password, fullName, email, birthdate, phoneNumber);
         this.education = education;
     }
+    @Override
+    public boolean canBeDeleted() {
+        return super.canBeDeleted() && this.routes.isEmpty();
+    }
     public TourGuideUser() {
         super();
     }

@@ -88,4 +88,7 @@ public class Service {
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
     }
+    public void addItemService(ItemService itemService) {
+        this.itemServiceList.add(itemService);
+    }
 }

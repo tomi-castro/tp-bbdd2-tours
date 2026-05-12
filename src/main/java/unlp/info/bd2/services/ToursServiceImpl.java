@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import unlp.info.bd2.repositories.jpa.*;
 import unlp.info.bd2.model.DriverUser;
 import unlp.info.bd2.model.ItemService;
 import unlp.info.bd2.model.Purchase;
@@ -22,11 +22,32 @@ import unlp.info.bd2.utils.ToursException;
 @Service
 public class ToursServiceImpl implements ToursService {
     @Autowired
-    private ToursRepository toursRepository;
+    private UserRepository userRepository;
+    @Autowired
+    private DriverUserRepository driverUserRepository;
+    @Autowired
+    private TourGuideUserRepository tourGuideUserRepository;
 
-    public ToursServiceImpl(ToursRepository repository) {
-        this.toursRepository = repository;
-    }
+    @Autowired
+    private StopRepository stopRepository;
+
+    @Autowired
+    private RouteRepository routeRepository;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
+
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+
+    @Autowired
+    private ItemServiceRepository itemServiceRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Override
     public User createUser(String username, String password, String fullName, String email, Date birthdate, String phoneNumber) throws ToursException {
@@ -34,7 +55,7 @@ public class ToursServiceImpl implements ToursService {
                 throw new ToursException("Username already exists: " + username);
             }
         User user = new User(username, password, fullName, email, birthdate, phoneNumber);
-        return toursRepository.createUser(user);
+        return userRepository.save(user);
     }
 
     @Override
@@ -44,7 +65,7 @@ public class ToursServiceImpl implements ToursService {
                 throw new ToursException("Username already exists: " + username);
             }
         DriverUser driverUser = new DriverUser(username, password, fullName, email, birthdate, phoneNumber, expedient);
-        return toursRepository.createDriverUser(driverUser);
+        return driverUserRepository.save(driverUser);
     }
 
     @Override
@@ -54,224 +75,231 @@ public class ToursServiceImpl implements ToursService {
                 throw new ToursException("Username already exists: " + username);
             }
         TourGuideUser tourGuideUser = new TourGuideUser(username, password, fullName, email, birthdate, phoneNumber, education);
-        return toursRepository.createTourGuideUser(tourGuideUser);
+        return tourGuideUserRepository.save(tourGuideUser);
     }
 
     @Override
     public Optional<User> getUserById(Long id) throws ToursException {
-        return toursRepository.getUserById(id);
+        return userRepository.findById(id).filter(User::isActive);
     }
 
     @Override
     public Optional<User> getUserByUsername(String username) throws ToursException {
-        return toursRepository.getUserByUsername(username);
+        Optional<User> user = userRepository.findByUsername(username).filter(User::isActive);
+        return user;
     }
 
     @Override
     public User updateUser(User user) throws ToursException {
-        User userWithUsername = toursRepository.getUserByUsername(user.getUsername()).orElse(null);
+        User userWithUsername = userRepository.findByUsername(user.getUsername()).orElse(null);
         if (userWithUsername != null && !userWithUsername.getId().equals(user.getId())) {
             throw new ToursException("Username already exists: " + user.getUsername());
         }
-        return toursRepository.updateUser(user);
+        return userRepository.save(user);
     }
 
     @Override
     public void deleteUser(User user) throws ToursException {
-        toursRepository.deleteUser(user);
+        if (!user.canBeDeleted()) {
+            throw new ToursException("El usuario se encuentra desactivado");
+        }
+        user.setActive(false);
+        this.updateUser(user);
     }
 
     @Override
     public Stop createStop(String name, String description) throws ToursException {
-        return toursRepository.createStop(name, description);
+        return stopRepository.save(new Stop(name, description));
     }
 
     @Override
     public List<Stop> getStopByNameStart(String name) {
-        return toursRepository.getStopByNameStart(name);
+        return stopRepository.findByNameStartingWith(name);
     }
 
     @Override
     public Route createRoute(String name, float price, float totalKm, int maxNumberOfUsers, List<Stop> stops)
             throws ToursException {
         Route route = new Route(name, price, totalKm, maxNumberOfUsers, stops);
-        return toursRepository.createRoute(route);
+        return routeRepository.save(route);
     }
 
     @Override
     public Optional<Route> getRouteById(Long id) {
-        
-        return toursRepository.getRouteById(id);
+        return routeRepository.findById(id);
     }
 
     @Override
     public List<Route> getRoutesBelowPrice(float price) {
-        return toursRepository.getRoutesBelowPrice(price);
+        return routeRepository.findByPriceLessThan(price);
         
     }
 
     @Override
     public void assignDriverByUsername(String username, Long idRoute) throws ToursException {
-        User user = toursRepository.getUserByUsername(username)
-                .orElseThrow(() -> new ToursException("User not found with username: " + username));
-        if (!(user instanceof DriverUser)) {
-            throw new ToursException("User with username " + username + " is not a DriverUser");
-        }
-        Route route = toursRepository.getRouteById(idRoute)
-                .orElseThrow(() -> new ToursException("Route not found with id: " + idRoute));
+        DriverUser user = driverUserRepository.findByUsername(username)
+            .orElseThrow(() -> new ToursException("Driver not found with username: " + username));
+        Route route = routeRepository.findById(idRoute)
+            .orElseThrow(() -> new ToursException("Route not found with id: " + idRoute));
         DriverUser driverUser = (DriverUser) user;
         driverUser.addRoute(route);
-        toursRepository.updateUser(driverUser);
+        routeRepository.save(route);
+        driverUserRepository.save(driverUser);
     }
 
     @Override
     public void assignTourGuideByUsername(String username, Long idRoute) throws ToursException {
-        User user = toursRepository.getUserByUsername(username)
-                .orElseThrow(() -> new ToursException("User not found with username: " + username));
-        if (!(user instanceof TourGuideUser)) {
-            throw new ToursException("User with username " + username + " is not a TourGuideUser");
-        }
-        Route route = toursRepository.getRouteById(idRoute)
-                .orElseThrow(() -> new ToursException("Route not found with id: " + idRoute));
+        TourGuideUser user = tourGuideUserRepository.findByUsername(username)
+            .orElseThrow(() -> new ToursException("Tour guide not found with username: " + username));
+        Route route = routeRepository.findById(idRoute)
+            .orElseThrow(() -> new ToursException("Route not found with id: " + idRoute));
         TourGuideUser tourGuideUser = (TourGuideUser) user;
         tourGuideUser.addRoute(route);
-        toursRepository.updateUser(tourGuideUser);
+        routeRepository.save(route);
+        tourGuideUserRepository.save(tourGuideUser);
     }
 
     @Override
     public Supplier createSupplier(String businessName, String authorizationNumber) throws ToursException {
-        if (toursRepository.getSupplierByAuthorizationNumber(authorizationNumber).isPresent()) {
+        if (supplierRepository.findByAuthorizationNumber(authorizationNumber).isPresent()) {
             throw new ToursException("Supplier with authorization number " + authorizationNumber + " already exists");
         }
         Supplier supplier = new Supplier(businessName, authorizationNumber);
-        return toursRepository.createSupplier(supplier);
+        return supplierRepository.save(supplier);
     }
 
     @Override
     public unlp.info.bd2.model.Service addServiceToSupplier(String name, float price, String description,
             Supplier supplier) throws ToursException {
         unlp.info.bd2.model.Service service = new unlp.info.bd2.model.Service(name, price, description, supplier);
-        toursRepository.addServiceToSupplier(service,supplier);
-
-        return service;
+        service.setSupplier(supplier);
+        supplier.addService(service);
+        return serviceRepository.save(service);
 }
 
     @Override
     public unlp.info.bd2.model.Service updateServicePriceById(Long id, float newPrice) throws ToursException {
-        return toursRepository.updateServicePriceById(id, newPrice);
+        unlp.info.bd2.model.Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new ToursException("Service not found with id: " + id));
+        service.setPrice(newPrice);
+        return serviceRepository.save(service);
     }
 
     @Override
     public Optional<Supplier> getSupplierById(Long id) {
-        return toursRepository.getSupplierById(id);
+        return supplierRepository.findById(id);
     }
 
     @Override
     public Optional<Supplier> getSupplierByAuthorizationNumber(String authorizationNumber) {
-        return toursRepository.getSupplierByAuthorizationNumber(authorizationNumber);
+        return supplierRepository.findByAuthorizationNumber(authorizationNumber);
     }
 
     @Override
     public Optional<unlp.info.bd2.model.Service> getServiceByNameAndSupplierId(String name, Long id)
         throws ToursException {
-        return toursRepository.getServiceByNameAndSupplierId(name, id);
+        return serviceRepository.findByNameAndSupplierId(name, id);
     }
 
     @Override
     public Purchase createPurchase(String code, Route route, User user) throws ToursException {
         Purchase purchase = new Purchase(code, route, user);
-        return toursRepository.createPurchase(purchase);
+        return purchaseRepository.save(purchase);
     }
     @Override
     public Purchase createPurchase(String code, Date date, Route route, User user) throws ToursException {
         Purchase purchase = new Purchase(code, date, route, user);
-        return toursRepository.createPurchase(purchase);
+        user.addPurchase(purchase);
+        return purchaseRepository.save(purchase);
     }
 
     @Override
     public ItemService addItemToPurchase(unlp.info.bd2.model.Service service, int quantity, Purchase purchase)
             throws ToursException {
-        return toursRepository.addItemToPurchase(service, quantity, purchase);
+        ItemService itemService = new ItemService(service, quantity, purchase);
+        purchase.addItemService(itemService);
+        service.addItemService(itemService);
+        return itemServiceRepository.save(itemService);
     }
 
     @Override
     public Optional<Purchase> getPurchaseByCode(String code) {
-        return toursRepository.getPurchaseByCode(code);
+        return purchaseRepository.findByCode(code);
     }
 
     @Override
     public void deletePurchase(Purchase purchase) throws ToursException {
-        toursRepository.deletePurchase(purchase);
+        purchaseRepository.delete(purchase);
     }
 
     @Override
     public Review addReviewToPurchase(int rating, String comment, Purchase purchase) throws ToursException {
-        return toursRepository.addReviewToPurchase(rating, comment, purchase);
+        Review review = new Review(rating, comment, purchase);
+        purchase.setReview(review);
+        return reviewRepository.save(review);
     }
 
     @Override
     public void deleteRoute(Route route) throws ToursException {
-        toursRepository.deleteRoute(route);
+        routeRepository.delete(route);
     }
 
     @Override
     public List<Purchase> getAllPurchasesOfUsername(String username) {
-        return toursRepository.getAllPurchasesOfUsername(username);
+        return purchaseRepository.findByUserUsername(username);
     }
 
     @Override
     public List<User> getUserSpendingMoreThan(float mount) {
-        return toursRepository.getUserSpendingMoreThan(mount);
+        return purchaseRepository.findUsersSpendingMoreThan(mount);
     }
 
     @Override
     public List<Supplier> getTopNSuppliersInPurchases(int n) {
-        return toursRepository.getTopNSuppliersInPurchases(n);
+        return purchaseRepository.findTopSuppliersInPurchases(org.springframework.data.domain.PageRequest.of(0, n));
     }
 
     @Override
     public long getCountOfPurchasesBetweenDates(Date start, Date end) {
-        return toursRepository.getCountOfPurchasesBetweenDates(start, end);
+        return purchaseRepository.countPurchasesBetweenDates(start, end);
     }
 
     @Override
     public List<Route> getRoutesWithStop(Stop stop) {
-        return toursRepository.getRoutesWithStop(stop);
+        return routeRepository.findRoutesWithStop(stop.getId());
     }
 
     @Override
     public Long getMaxStopOfRoutes() {
-        return toursRepository.getMaxStopOfRoutes();
+        return routeRepository.findMaxStopOfRoutes();
     }
 
     @Override
     public List<Route> getRoutsNotSell() {
-        return toursRepository.getRoutsNotSell();
+        return routeRepository.findRoutsNotSell();
     }
 
     @Override
     public List<Route> getTop3RoutesWithMaxRating() {
-        return toursRepository.getTop3RoutesWithMaxRating();
+        return routeRepository.findTop3RoutesWithMaxRating(org.springframework.data.domain.PageRequest.of(0, 3));
     }
 
     @Override
     public unlp.info.bd2.model.Service getMostDemandedService() {
-        return toursRepository.getMostDemandedService();
+        return serviceRepository.findMostDemandedService(org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     public List<TourGuideUser> getTourGuidesWithRating1() {
-        return toursRepository.getTourGuidesWithRating1();
+        return userRepository.findTourGuidesWithRating1();
     }
 
     private boolean alreadyRegisteredName(String username) {
-        try {
-            return toursRepository.getUserByUsername(username).isPresent();
-        } catch (ToursException e) {
-            // Manejar la excepción según sea necesario
-            e.printStackTrace();
-            return false; // O lanzar una excepción personalizada
-        }
+        return userRepository.findByUsername(username).isPresent();
+
     }
     
     

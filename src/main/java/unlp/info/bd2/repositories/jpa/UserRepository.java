@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import unlp.info.bd2.model.TourGuideUser;
 import unlp.info.bd2.model.User;
@@ -18,4 +21,5 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
 
     @Query("select distinct u from TourGuideUser u join Review r on u.id = r.purchase.user.id where r.rating = 1")
     List<TourGuideUser> findTourGuidesWithRating1();
+
 }
