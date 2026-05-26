@@ -265,4 +265,91 @@ db.route.aggregate([
   }]
 )
 
-36. 
+36. db.route.aggregate([
+  // 1. Descomponer el array de paradas en un documento por cada parada
+  { $unwind: "$stops" },
+  
+  // 2. Agrupar por el código de parada y contar las ocurrencias
+  { 
+    $group: { 
+      _id: "$stops", 
+      totalApariciones: { $sum: 1 } 
+    } 
+  },
+  
+  // 3. Ordenar de mayor a menor según el conteo
+  { $sort: { totalApariciones: -1 } },
+  
+  // 4. Limitar el resultado al primero (el que más aparece)
+  { $limit: 1 },
+  
+  // 5. Cruzar con la colección 'stop' para traer los datos legibles (nombre, descripción)
+  {
+    $lookup: {
+      from: "stop",
+      localField: "_id",
+      foreignField: "code",
+      as: "datosParada"
+    }
+  },
+  
+  // 6. Limpiar el formato para que quede más ordenado (opcional)
+  { $unwind: "$datosParada" }, 
+  {
+    $project: {
+      _id: 0,
+      codigoParada: "$_id",
+      totalApariciones: 1,
+      nombreParada: "$datosParada.name",
+      descripcion: "$datosParada.descipcion" // Respetando el typo de tu script original
+    }
+  }
+])
+
+37. db.route.aggregate([
+  { $match:{ price: {$lt: 15000}}},
+  {
+    $project: {
+      name: 1,
+      totalKm: 1,
+      cantStops: {$size: "$stops"},
+      price: 1,
+    }
+  },
+  { $out: "rutas_economicas" }
+])
+
+38. db.route.aggregate([
+  // 1. Descomponer el array de paradas en un documento por cada parada
+  { $unwind: "$stops" },
+  
+  // 2. Agrupar por el código de parada y contar las ocurrencias
+  { 
+    $group: { 
+      _id: "$stops", 
+      promedio: { $avg: "$price" } 
+    } 
+  },
+  {
+    $lookup: {
+      from: "stop",
+      localField: "_id",
+      foreignField: "code",
+      as: "datosParada"
+    }
+  },
+  
+  // 6. Limpiar el formato para que quede más ordenado (opcional)
+   { $unwind: "$datosParada" }, 
+  {
+    $project: {
+      _id: 0,
+      codigoParada: "$_id",
+      nombreParada: "$datosParada.name",
+      descripcion: "$datosParada.descipcion",
+      promedio : 1
+    }
+  }
+  
+
+])
