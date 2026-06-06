@@ -1,5 +1,7 @@
 # Mapeo de entidades
 
+
+
 ## Mapeo de una entidad simple: Service
 
 ### Ejercicio 12: ​¿Cuál es el conjunto mínimo de anotaciones que debe tener una clase para ser persistente con JPA?

@@ -1,0 +1,1 @@
+Un ORM es una técnica que se usa para poder persistir datos de un modelo orientado a objetos a un modelo de datos relacional. Suelve el problema de "Diferencia de Impedancia" que son las diferencias que hay entre estos modelos. Estas diferencias son:
