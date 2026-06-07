@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {HibernateConfiguration.class, AppConfig.class}, loader = AnnotationConfigContextLoader.class)
 @ExtendWith(SpringExtension.class)
 @Transactional
-@Rollback(true)
+@Rollback(false)
 class ToursApplicationTests {
 
 	@Autowired
@@ -336,6 +336,18 @@ class ToursApplicationTests {
 		this.toursService.assignTourGuideByUsername(tourGuideUser.getUsername(), route1.getId());
 		assertTrue(tourGuideUser.isActive());
 		assertThrows(ToursException.class, () -> this.toursService.deleteUser(tourGuideUser), "El usuario no puede ser desactivado");
+	}
+
+	@Test
+	void PruebaTest() {
+		Padre1 padre = new Padre1();
+		Hijo1 hijo1 = new Hijo1();
+		Hijo1 hijo2 = new Hijo1();
+		padre.addChild(hijo2);
+		padre.addChild(hijo1);
+		padre.removeChild(hijo1);
+
+
 	}
 
 }

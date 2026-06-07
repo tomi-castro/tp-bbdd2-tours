@@ -5,11 +5,10 @@ import java.util.Date;
 import java.util.List;
 import jakarta.persistence.*;
 @Entity
-@Inheritance
-@DiscriminatorColumn(discriminatorType = DiscriminatorType.STRING, name="TIPO_USUARIO")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(unique=true, nullable=false, updatable = false)
