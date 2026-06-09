@@ -54,6 +54,8 @@ Se debería usar cuando
 11. El id?
 12. lo hice copiando todo y usnado un insertmany, q otra forma hay?
 
+
+
 13. db.recorridos.updateOne(
    { "nombre": "Cultural Odyssey" },
    { $set: { "totalKm": 5 } }
